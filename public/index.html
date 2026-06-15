@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HireBoard — Find Your Next Role</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%232563eb'/><text y='24' x='5' font-size='22'>💼</text></svg>">
+</head>
+<body>
+
+<!-- ── FLASH MESSAGES ─────────────────────────────────────────────────── -->
+<div id="flash-container"></div>
+
+<!-- ── NAVBAR ─────────────────────────────────────────────────────────── -->
+<nav class="navbar">
+  <div class="nav-inner">
+    <a class="nav-logo" href="#" onclick="navigate('home')">Hire<span>Board</span></a>
+
+    <div class="nav-links" id="nav-links">
+      <a class="nav-link" href="#" onclick="navigate('jobs')">Browse Jobs</a>
+      <a class="nav-link" id="nav-dashboard" href="#" onclick="navigate('dashboard')" style="display:none">Dashboard</a>
+      <a class="nav-link" id="nav-post-job" href="#" onclick="navigate('post-job')" style="display:none">Post a Job</a>
+    </div>
+
+    <div class="nav-actions">
+      <!-- Logged out state -->
+      <div id="nav-auth-btns">
+        <a class="btn btn-ghost btn-sm" href="#" onclick="navigate('login')">Log in</a>
+        <a class="btn btn-primary btn-sm" href="#" onclick="navigate('register')">Sign up</a>
+      </div>
+      <!-- Logged in state -->
+      <div id="nav-user-info" style="display:none" class="nav-user">
+        <div class="nav-avatar" id="nav-avatar">?</div>
+        <span id="nav-username"></span>
+        <button class="btn btn-ghost btn-sm" onclick="logout()">Sign out</button>
+      </div>
+    </div>
+    <button class="hamburger" onclick="toggleMobileMenu()">☰</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: HOME                                                         -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <section class="hero">
+    <div class="container">
+      <div class="hero-eyebrow">🚀 10,000+ companies hiring now</div>
+      <h1>Find the job you <em>actually</em> want</h1>
+      <p class="hero-sub">Browse thousands of opportunities from top companies. Filter by role, location, and salary — no noise, just the right fit.</p>
+      <div class="search-bar">
+        <input type="text" id="hero-search" placeholder="Search jobs, skills, companies…" onkeydown="if(event.key==='Enter')heroSearch()">
+        <button onclick="heroSearch()">Search Jobs →</button>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="hero-stat-num" id="stat-jobs">—</div>
+          <div class="hero-stat-lbl">Active Jobs</div>
+        </div>
+        <div>
+          <div class="hero-stat-num">3</div>
+          <div class="hero-stat-lbl">Companies Hiring</div>
+        </div>
+        <div>
+          <div class="hero-stat-num" id="stat-roles">6+</div>
+          <div class="hero-stat-lbl">Job Types</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured jobs on home page -->
+  <div class="container" style="padding: 36px 20px 60px;">
+    <h2 style="font-family:var(--font-hd);font-size:1.4rem;font-weight:700;color:var(--navy);margin-bottom:6px;">
+      Latest Openings
+    </h2>
+    <p style="color:var(--grey-400);font-size:.875rem;margin-bottom:20px;">Freshly posted jobs from top employers</p>
+    <div id="home-jobs-list">
+      <div class="spinner"></div>
+    </div>
+    <div style="text-align:center;margin-top:24px;">
+      <button class="btn btn-secondary btn-lg" onclick="navigate('jobs')">View all jobs →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: JOBS LISTING                                                 -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-jobs">
+  <!-- Filters -->
+  <div class="filters-panel">
+    <div class="filters-inner">
+      <input class="filter-input" type="text" id="filter-search" placeholder="🔍 Search keywords…" oninput="debounceFilter()">
+      <input class="filter-input" type="text" id="filter-location" placeholder="📍 Location" oninput="debounceFilter()">
+      <input class="filter-input" type="text" id="filter-company" placeholder="🏢 Company" oninput="debounceFilter()">
+      <select class="filter-select" id="filter-type" onchange="applyFilters()">
+        <option value="">All Types</option>
+        <option>Full-Time</option>
+        <option>Part-Time</option>
+        <option>Contract</option>
+        <option>Internship</option>
+        <option>Remote</option>
+        <option>Freelance</option>
+      </select>
+      <select class="filter-select" id="filter-level" onchange="applyFilters()">
+        <option value="">All Levels</option>
+        <option>Entry Level</option>
+        <option>Mid Level</option>
+        <option>Senior Level</option>
+        <option>Lead</option>
+        <option>Manager</option>
+        <option>Director</option>
+      </select>
+      <input class="filter-input" type="number" id="filter-min-salary" placeholder="Min salary ₹" oninput="debounceFilter()" style="width:130px;">
+      <button class="btn-filter-clear" onclick="clearFilters()">✕ Clear filters</button>
+    </div>
+  </div>
+
+  <div class="main-layout">
+    <!-- Jobs Column -->
+    <div class="jobs-section">
+      <h2>
+        Job Listings
+        <span class="jobs-count" id="jobs-count-label"></span>
+      </h2>
+      <div id="jobs-list">
+        <div class="spinner"></div>
+        <p class="loading-text">Finding opportunities…</p>
+      </div>
+      <div id="jobs-pagination" class="pagination"></div>
+    </div>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="main-sidebar">
+      <!-- CTA card for guests -->
+      <div class="sidebar-card" id="sidebar-cta">
+        <h3>🎯 Get hired faster</h3>
+        <p style="color:var(--grey-600);font-size:.875rem;margin-bottom:16px;line-height:1.6;">
+          Create a free account to save jobs, track applications, and get notified about new roles.
+        </p>
+        <button class="btn btn-primary btn-block" onclick="navigate('register')">Create free account</button>
+        <button class="btn btn-ghost btn-block" style="margin-top:8px;" onclick="navigate('login')">Log in</button>
+      </div>
+
+      <!-- Job Type Breakdown -->
+      <div class="sidebar-card">
+        <h3>Browse by type</h3>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <a href="#" class="sidebar-nav-item" onclick="filterByType('Full-Time')">💼 Full-Time</a>
+          <a href="#" class="sidebar-nav-item" onclick="filterByType('Remote')">🌐 Remote</a>
+          <a href="#" class="sidebar-nav-item" onclick="filterByType('Internship')">🎓 Internship</a>
+          <a href="#" class="sidebar-nav-item" onclick="filterByType('Contract')">📋 Contract</a>
+          <a href="#" class="sidebar-nav-item" onclick="filterByType('Part-Time')">⏰ Part-Time</a>
+          <a href="#" class="sidebar-nav-item" onclick="filterByType('Freelance')">🚀 Freelance</a>
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: JOB DETAIL                                                   -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-job-detail">
+  <div class="job-detail-layout">
+    <div id="job-detail-main">
+      <div class="spinner"></div>
+    </div>
+    <div id="job-detail-sidebar">
+      <div class="spinner"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: LOGIN                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-login">
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-logo">Hire<span>Board</span></div>
+      <p class="auth-subtitle">Welcome back — sign in to continue</p>
+
+      <form id="login-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label class="form-label">Email address <span class="required">*</span></label>
+          <input class="form-control" type="email" id="login-email" placeholder="you@example.com" required>
+          <span class="field-error" id="login-email-error"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password <span class="required">*</span></label>
+          <input class="form-control" type="password" id="login-password" placeholder="••••••••" required>
+          <span class="field-error" id="login-password-error"></span>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" type="submit" id="login-btn">Sign in</button>
+        <p id="login-error" style="color:var(--red);font-size:.85rem;text-align:center;margin-top:10px;"></p>
+      </form>
+
+      <div class="auth-switch">
+        Don't have an account? <a href="#" onclick="navigate('register')">Sign up free</a>
+      </div>
+
+      <div class="auth-divider">Demo credentials</div>
+      <div style="background:var(--grey-100);border-radius:var(--radius-sm);padding:12px;font-size:.8rem;color:var(--grey-600);">
+        <strong>Job Seeker:</strong> david@email.com / Password123!<br>
+        <strong>Employer:</strong> alice@techcorp.com / Password123!
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: REGISTER                                                     -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-register">
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-logo">Hire<span>Board</span></div>
+      <p class="auth-subtitle">Create your free account in seconds</p>
+
+      <form id="register-form" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label class="form-label">Choose your role</label>
+          <div class="role-selector">
+            <label class="role-option selected" id="role-seeker">
+              <input type="radio" name="role" value="job_seeker" checked>
+              <div class="role-icon">👤</div>
+              <div class="role-name">Job Seeker</div>
+              <div class="role-desc">Find & apply to jobs</div>
+            </label>
+            <label class="role-option" id="role-employer">
+              <input type="radio" name="role" value="employer">
+              <div class="role-icon">🏢</div>
+              <div class="role-name">Employer</div>
+              <div class="role-desc">Post jobs & hire</div>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Full name <span class="required">*</span></label>
+          <input class="form-control" type="text" id="reg-name" placeholder="Jane Smith" required>
+          <span class="field-error" id="reg-name-error"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email address <span class="required">*</span></label>
+          <input class="form-control" type="email" id="reg-email" placeholder="you@example.com" required>
+          <span class="field-error" id="reg-email-error"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password <span class="required">*</span></label>
+          <input class="form-control" type="password" id="reg-password" placeholder="Min 8 chars, 1 uppercase, 1 number" required>
+          <span class="form-hint">At least 8 characters, one uppercase letter, one number</span>
+          <span class="field-error" id="reg-password-error"></span>
+        </div>
+
+        <button class="btn btn-primary btn-block btn-lg" type="submit" id="register-btn">Create account</button>
+        <p id="register-error" style="color:var(--red);font-size:.85rem;text-align:center;margin-top:10px;"></p>
+      </form>
+
+      <div class="auth-switch">
+        Already have an account? <a href="#" onclick="navigate('login')">Sign in</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: DASHBOARD                                                    -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-dashboard">
+  <div class="dashboard-layout">
+    <!-- Sidebar nav -->
+    <aside>
+      <nav class="sidebar-nav" id="dashboard-nav">
+        <!-- Populated by JS based on role -->
+      </nav>
+    </aside>
+
+    <!-- Main content area — swaps between tabs -->
+    <main class="dashboard-content" id="dashboard-main">
+      <div class="spinner"></div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- PAGE: POST / EDIT JOB                                             -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="page" id="page-post-job">
+  <div class="section-page" style="max-width:780px;">
+    <h1 class="page-title" id="post-job-title">Post a New Job</h1>
+    <p class="page-subtitle" id="post-job-subtitle">Fill in the details below to publish your job listing.</p>
+
+    <div style="background:white;border-radius:var(--radius-lg);padding:32px;box-shadow:var(--shadow-sm);border:1.5px solid var(--grey-200);">
+      <form id="job-form" onsubmit="handleJobSubmit(event)">
+        <input type="hidden" id="edit-job-id">
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Job Title <span class="required">*</span></label>
+            <input class="form-control" type="text" id="job-title" placeholder="e.g. Senior Backend Engineer" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Company Name <span class="required">*</span></label>
+            <input class="form-control" type="text" id="job-company" placeholder="e.g. TechCorp" required>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Location <span class="required">*</span></label>
+            <input class="form-control" type="text" id="job-location" placeholder="e.g. Bangalore or Remote" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Annual Salary (₹)</label>
+            <input class="form-control" type="number" id="job-salary" placeholder="e.g. 1500000" min="0">
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="form-group">
+            <label class="form-label">Job Type <span class="required">*</span></label>
+            <select class="form-control" id="job-type" required>
+              <option value="">Select type…</option>
+              <option>Full-Time</option>
+              <option>Part-Time</option>
+              <option>Contract</option>
+              <option>Internship</option>
+              <option>Remote</option>
+              <option>Freelance</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Experience Level</label>
+            <select class="form-control" id="job-level">
+              <option value="">Select level…</option>
+              <option>Entry Level</option>
+              <option>Mid Level</option>
+              <option>Senior Level</option>
+              <option>Lead</option>
+              <option>Manager</option>
+              <option>Director</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Job Description <span class="required">*</span></label>
+          <textarea class="form-control" id="job-description" rows="6" placeholder="Describe the role, responsibilities, team, and what makes this opportunity exciting (min 50 characters)…" required style="min-height:140px;"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Requirements</label>
+          <textarea class="form-control" id="job-requirements" rows="4" placeholder="List skills, qualifications, and experience required…" style="min-height:100px;"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Benefits & Perks</label>
+          <textarea class="form-control" id="job-benefits" rows="3" placeholder="e.g. Health insurance, stock options, flexible hours…" style="min-height:80px;"></textarea>
+        </div>
+
+        <div style="display:flex;gap:12px;margin-top:8px;">
+          <button class="btn btn-primary btn-lg" type="submit" id="job-submit-btn">Publish Job</button>
+          <button class="btn btn-ghost btn-lg" type="button" onclick="navigate('dashboard')">Cancel</button>
+        </div>
+        <p id="job-form-error" style="color:var(--red);font-size:.85rem;margin-top:10px;"></p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- APPLY MODAL                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="apply-modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeApplyModal()">✕</button>
+    <h2>Apply for <span id="apply-job-title"></span></h2>
+    <p style="color:var(--grey-400);font-size:.875rem;margin-bottom:20px;">
+      Your profile will be shared with the employer.
+    </p>
+    <form onsubmit="submitApplication(event)">
+      <div class="form-group">
+        <label class="form-label">Cover Letter <span style="color:var(--grey-400);font-weight:400;">(optional)</span></label>
+        <textarea class="form-control" id="cover-letter" rows="6"
+          placeholder="Tell the employer why you're a great fit for this role…"
+          style="min-height:140px;"></textarea>
+        <span class="form-hint">Max 5000 characters</span>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-primary btn-lg" type="submit" id="apply-btn">Submit Application</button>
+        <button class="btn btn-ghost btn-lg" type="button" onclick="closeApplyModal()">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<!-- APP SCRIPTS                                                        -->
+<!-- ═══════════════════════════════════════════════════════════════════ -->
+<script src="/js/app.js"></script>
+</body>
+</html>
