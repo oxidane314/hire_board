@@ -1,8 +1,27 @@
-# HireBoard — Full-Stack Job Board
+# HireBoard
 
-A portfolio-quality full-stack job board built with **Node.js**, **Express.js**, **PostgreSQL**, and vanilla **JavaScript**. Demonstrates SQL design, REST APIs, JWT authentication, CRUD, filtering, and role-based access control.
+Full-stack job portal built with Node.js, Express.js, PostgreSQL, and Vanilla JavaScript.
 
+![Node.js](https://img.shields.io/badge/Node.js-Backend-green)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Database-blue)
+![JWT](https://img.shields.io/badge/Auth-JWT-orange)
 ---
+## Screenshots
+
+### Home Page
+![Home](screenshots/home.png)
+
+### Job Listings
+![Jobs](screenshots/jobs.png)
+
+### Sign-up page
+![Sign-up page](screenshots/signinpage.png)
+
+### log-in page
+![Log-in page](screenshots/loginpage.png)
+
+### dashboard page
+![Dashboard](screenshots/dashboard.png)
 
 ## 📸 Features
 
@@ -19,6 +38,14 @@ A portfolio-quality full-stack job board built with **Node.js**, **Express.js**,
 | **Frontend** | Single-page app — no framework, pure vanilla JS routing |
 
 ---
+## What I Learned
+
+- Designing relational database schemas in PostgreSQL
+- Building REST APIs with Express.js
+- Implementing JWT authentication and role-based access control
+- Writing parameterized SQL queries to prevent SQL injection
+- Building server-side filtering and pagination
+- Managing PostgreSQL connections using pg.Pool
 
 ## 🗂 Project Structure
 
